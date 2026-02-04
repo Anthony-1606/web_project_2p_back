@@ -34,13 +34,15 @@ class Task {
      * CREATE - Crear nueva tarea
      * @return bool True si se creó correctamente, false en caso contrario
      */
-    public function create() {
-    $query = "INSERT INTO " . $this->table_name . "
-              SET title = :title,
-                  description = :description,
-                  status = :status,
-                  priority = :priority,
-                  due_date = :due_date";
+    /**
+ * CREATE - Crear nueva tarea
+ * @return bool True si se creó correctamente, false en caso contrario
+ */
+public function create() {
+    // ✅ Sintaxis correcta para PostgreSQL
+    $query = "INSERT INTO " . $this->table_name . " 
+              (title, description, status, priority, due_date)
+              VALUES (:title, :description, :status, :priority, :due_date)";
     
     $stmt = $this->conn->prepare($query);
     
@@ -56,7 +58,7 @@ class Task {
     $stmt->bindParam(":status", $this->status);
     $stmt->bindParam(":priority", $this->priority);
     
-    // FIX: Manejar NULL correctamente en PostgreSQL
+    // Manejar NULL correctamente
     if ($this->due_date === null || empty($this->due_date)) {
         $stmt->bindValue(":due_date", null, PDO::PARAM_NULL);
     } else {
@@ -67,7 +69,7 @@ class Task {
         return true;
     }
     return false;
-}
+    } 
     
     /**
      * READ - Obtener todas las tareas
