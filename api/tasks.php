@@ -1,4 +1,4 @@
-    <?php
+<?php
 /**
  * tasks.php
  * API REST para gestión de tareas
@@ -7,10 +7,6 @@
  * @author Anthony
  * @date 2026-02-04
  */
-
-// Ocultar warnings en producción
-error_reporting(E_ERROR | E_PARSE);
-ini_set('display_errors', '0');
 
 // Headers CORS - IMPORTANTE para permitir peticiones desde Netlify
 $allowed_origin = getenv('FRONTEND_URL') ?: '*';
