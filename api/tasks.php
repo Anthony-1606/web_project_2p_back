@@ -1,4 +1,4 @@
-<?php
+    <?php
 /**
  * tasks.php
  * API REST para gestión de tareas
@@ -7,6 +7,10 @@
  * @author Anthony
  * @date 2026-02-04
  */
+
+// Ocultar warnings en producción
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', '0');
 
 // Headers CORS - IMPORTANTE para permitir peticiones desde Netlify
 $allowed_origin = getenv('FRONTEND_URL') ?: '*';
@@ -87,36 +91,40 @@ switch($method) {
     // POST - Crear nueva tarea
     // ============================================
     case 'POST':
-        if(
-            !empty($data->title)
-        ) {
-            $task->title = $data->title;
-            $task->description = $data->description ?? '';
-            $task->status = $data->status ?? 'pendiente';
-            $task->priority = $data->priority ?? 'media';
-            $task->due_date = $data->due_date ?? null;
-            
-            if($task->create()) {
-                http_response_code(201);
-                echo json_encode(array(
-                    'message' => 'Tarea creada exitosamente',
-                    'success' => true
-                ));
-            } else {
-                http_response_code(500);
-                echo json_encode(array(
-                    'message' => 'Error al crear la tarea',
-                    'success' => false
-                ));
-            }
+    if(!empty($data->title)) {
+        $task->title = $data->title;
+        $task->description = isset($data->description) ? $data->description : '';
+        $task->status = isset($data->status) ? $data->status : 'pendiente';
+        $task->priority = isset($data->priority) ? $data->priority : 'media';
+        
+        // FIX IMPORTANTE: Manejar fecha vacía
+        if (isset($data->due_date) && !empty($data->due_date)) {
+            $task->due_date = $data->due_date;
         } else {
-            http_response_code(400);
+            $task->due_date = null;  // NULL en vez de string vacío
+        }
+        
+        if($task->create()) {
+            http_response_code(201);
             echo json_encode(array(
-                'message' => 'Datos incompletos. El título es obligatorio',
+                'message' => 'Tarea creada exitosamente',
+                'success' => true
+            ));
+        } else {
+            http_response_code(500);
+            echo json_encode(array(
+                'message' => 'Error al crear la tarea',
                 'success' => false
             ));
         }
-        break;
+    } else {
+        http_response_code(400);
+        echo json_encode(array(
+            'message' => 'Datos incompletos. El título es obligatorio',
+            'success' => false
+        ));
+    }
+    break;
     
     // ============================================
     // PUT - Actualizar tarea

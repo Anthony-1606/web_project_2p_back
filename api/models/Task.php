@@ -35,34 +35,39 @@ class Task {
      * @return bool True si se creó correctamente, false en caso contrario
      */
     public function create() {
-        $query = "INSERT INTO " . $this->table_name . "
-                  SET title = :title,
-                      description = :description,
-                      status = :status,
-                      priority = :priority,
-                      due_date = :due_date";
-        
-        $stmt = $this->conn->prepare($query);
-        
-        // Limpiar datos
-        $this->title = htmlspecialchars(strip_tags($this->title));
-        $this->description = htmlspecialchars(strip_tags($this->description));
-        $this->status = htmlspecialchars(strip_tags($this->status));
-        $this->priority = htmlspecialchars(strip_tags($this->priority));
-        $this->due_date = htmlspecialchars(strip_tags($this->due_date));
-        
-        // Bind de parámetros
-        $stmt->bindParam(":title", $this->title);
-        $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":status", $this->status);
-        $stmt->bindParam(":priority", $this->priority);
+    $query = "INSERT INTO " . $this->table_name . "
+              SET title = :title,
+                  description = :description,
+                  status = :status,
+                  priority = :priority,
+                  due_date = :due_date";
+    
+    $stmt = $this->conn->prepare($query);
+    
+    // Limpiar datos
+    $this->title = htmlspecialchars(strip_tags($this->title));
+    $this->description = htmlspecialchars(strip_tags($this->description));
+    $this->status = htmlspecialchars(strip_tags($this->status));
+    $this->priority = htmlspecialchars(strip_tags($this->priority));
+    
+    // Bind de parámetros
+    $stmt->bindParam(":title", $this->title);
+    $stmt->bindParam(":description", $this->description);
+    $stmt->bindParam(":status", $this->status);
+    $stmt->bindParam(":priority", $this->priority);
+    
+    // FIX: Manejar NULL correctamente en PostgreSQL
+    if ($this->due_date === null || empty($this->due_date)) {
+        $stmt->bindValue(":due_date", null, PDO::PARAM_NULL);
+    } else {
         $stmt->bindParam(":due_date", $this->due_date);
-        
-        if($stmt->execute()) {
-            return true;
-        }
-        return false;
     }
+    
+    if($stmt->execute()) {
+        return true;
+    }
+    return false;
+}
     
     /**
      * READ - Obtener todas las tareas
